@@ -1,9 +1,12 @@
 package cn.itcast.order.service;
 
+import cn.itcast.order.client.UserClient;
 import cn.itcast.order.mapper.OrderMapper;
 import cn.itcast.order.pojo.Order;
+import cn.itcast.order.pojo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class OrderService {
@@ -11,10 +14,35 @@ public class OrderService {
     @Autowired
     private OrderMapper orderMapper;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private UserClient userClient;
+
+    //通过feign远程调用方式
     public Order queryOrderById(Long orderId) {
         // 1.查询订单
         Order order = orderMapper.findById(orderId);
+        // 2.使用feign远程调用
+        User user = userClient.findById(order.getUserId());
+        // 3. 将用户信息封装进订单
+        order.setUser(user);
         // 4.返回
         return order;
     }
+
+//    //普通方式
+//    public Order queryOrderById(Long orderId) {
+//        // 1.查询订单
+//        Order order = orderMapper.findById(orderId);
+//        // 2.远程查询user
+////        String url = "http://localhost:8081/user/" +  order.getUserId();
+//        String url = "http://userservice/user/" +  order.getUserId();
+//        User user = restTemplate.getForObject(url, User.class);
+//        // 3.封装user
+//        order.setUser(user);
+//        // 4.返回
+//        return order;
+//    }
 }
